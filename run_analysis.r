@@ -1,8 +1,9 @@
+## Preparation and merging
 setwd(".\\UCI HAR Dataset")
 train_data <- read.table("train\\X_train.txt")
 test_data <- read.table("test\\X_test.txt")
-merged_data <- rbind.data.frame(train_data, test_data)
 
+merged_data <- rbind.data.frame(train_data, test_data)
 
 
 train_subject <- read.table("train\\subject_train.txt")
@@ -14,12 +15,14 @@ y_test <- read.table("test\\y_test.txt")
 merged_y <- rbind.data.frame(y_train, y_test)
 merged_data$activity <- merged_y$V1
 
+## Applying labels
 
 labels <- read.table("activity_labels.txt")
 
 for(i in 1:6){
-    merged_data$activity[merged_data$activity == i] <- as.character(labels[i, 2])
+    merged_data$activity[merged_data$activity == i] <- tolower(as.character(labels[i, 2]))
 }
+
 
 merged_data$activity <- as.factor(merged_data$activity)
 
@@ -30,6 +33,8 @@ merged_data$subject <- merged_subject$V1
 features <- read.table("features.txt")
 features <- features[,2]
 for_mean_std <- c(grepl("mean", features) | grepl("std", features), T, T)
+
+## Names for our features
 col_names <- grep("mean|std", features, value = T)
 col_names <- gsub("[()-]", "", col_names)
 col_names <- tolower(col_names)
@@ -54,6 +59,10 @@ for(i in 2:(ncol(only_mean_or_std)-2)){
 names(final_array_subject) <- names(only_mean_or_std)[1:(ncol(only_mean_or_std)-2)]
 
 final_array <- rbind.data.frame(final_array_subject, final_array_activity)
-names(final_array) <- col_names
+colnames(final_array) <- col_names
+rownames(final_array) <- tolower(rownames(final_array))
 
-write.table(final_array, "..\\answer.txt")
+write.table(final_array, "..\\answer.txt", col.names = F, row.names = F)
+
+writeLines(rownames(final_array), "..\\rownames.txt")
+writeLines(colnames(final_array), "..\\colnames.txt")
